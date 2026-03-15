@@ -19,7 +19,7 @@ final class StudyViewModel {
     ) {
         self.photoLoader = photoLoader ?? ApplePhotoLoadingService()
         self.ocr = ocr ?? AppleOCRService()
-        self.ai = ai ?? AppleAIService()
+        self.ai = ai ?? AppleIntelligenceService()
     }
 
     // MARK: - Photo Selection

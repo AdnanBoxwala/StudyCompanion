@@ -29,7 +29,6 @@ struct SaveStudyView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Subject
                 Section("Subject") {
                     if !existingSubjects.isEmpty {
                         Toggle("Use existing subject", isOn: $useExistingSubject)
@@ -47,7 +46,6 @@ struct SaveStudyView: View {
                     }
                 }
 
-                // Chapter
                 Section("Chapter") {
                     if useExistingSubject && !chaptersForSelectedSubject.isEmpty {
                         Toggle("Use existing chapter", isOn: $useExistingChapter)
@@ -65,13 +63,11 @@ struct SaveStudyView: View {
                     }
                 }
 
-                // Topic
                 Section("Topic") {
                     TextField("Topic name", text: $topicName)
                         .autocorrectionDisabled()
                 }
 
-                // Content preview
                 Section("Content to Save") {
                     Label("Extracted Text", systemImage: "doc.text")
                     if viewModel.summary != nil {
@@ -96,7 +92,6 @@ struct SaveStudyView: View {
                 }
             }
             .onChange(of: selectedSubject) {
-                // Reset chapter selection when subject changes
                 selectedChapter = nil
                 useExistingChapter = false
             }
