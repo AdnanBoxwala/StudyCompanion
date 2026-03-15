@@ -1,5 +1,6 @@
-import Testing
 import PhotosUI
+import SwiftUI
+import Testing
 @testable import StudyCompanion
 
 // MARK: - Mock Services
