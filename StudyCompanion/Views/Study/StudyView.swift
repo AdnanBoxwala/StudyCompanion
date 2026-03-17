@@ -1,6 +1,5 @@
 import SwiftUI
 import PhotosUI
-import FoundationModels
 
 struct StudyView: View {
     @State private var viewModel = StudyViewModel()
@@ -11,32 +10,7 @@ struct StudyView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            Group {
-                switch viewModel.modelAvailability {
-                case .available:
-                    mainContent
-                case .unavailable(.deviceNotEligible):
-                    unavailableView(
-                        title: "Device Not Supported",
-                        message: "This app requires Apple Intelligence, which is available on iPhone 15 Pro and later."
-                    )
-                case .unavailable(.appleIntelligenceNotEnabled):
-                    unavailableView(
-                        title: "Apple Intelligence Disabled",
-                        message: "Please enable Apple Intelligence in Settings to use this app."
-                    )
-                case .unavailable(.modelNotReady):
-                    unavailableView(
-                        title: "Model Loading",
-                        message: "Apple Intelligence is preparing. Please try again shortly."
-                    )
-                case .unavailable:
-                    unavailableView(
-                        title: "Unavailable",
-                        message: "Apple Intelligence is currently unavailable."
-                    )
-                }
-            }
+            mainContent
             .navigationTitle("Study")
             .navigationDestination(for: Destination.self) { destination in
                 switch destination {
@@ -153,13 +127,4 @@ struct StudyView: View {
         }
     }
 
-    // MARK: - Helper Views
-
-    private func unavailableView(title: String, message: String) -> some View {
-        ContentUnavailableView {
-            Label(title, systemImage: "brain")
-        } description: {
-            Text(message)
-        }
-    }
 }
