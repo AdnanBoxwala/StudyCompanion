@@ -15,3 +15,13 @@
 //    - Requires API key management (e.g. Keychain storage)
 //    - Consider a settings screen for users to enter their own API keys
 //    - The service protocol extraction (already done) makes this a drop-in replacement
+//
+// 3. Batch processing for larger documents.
+//    - Remove or raise the 3-photo selection limit
+//    - OCR: no changes needed — Vision handles any number of images
+//    - Summarization: split extracted text into chunks (e.g. 3 pages each),
+//      summarize each chunk, then run a final meta-summary pass to combine them
+//    - Flashcards: generate cards per chunk, optionally deduplicate overlapping cards
+//    - Add progress UI ("Processing batch 2 of 4...")
+//    - Handle partial failure (if one batch fails, show results from successful batches)
+//    - Chunk size needs experimentation based on FoundationModels context window limit

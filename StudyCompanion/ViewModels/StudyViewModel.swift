@@ -60,6 +60,17 @@ final class StudyViewModel {
         case generateFlashcards(count: Int)
     }
 
+    // MARK: - Scanned Images
+
+    func addScannedImages(_ images: [UIImage]) {
+        selectedImages = images
+        selectedPhotoItems = []
+        extractedText = ""
+        summary = nil
+        flashcards = []
+        currentError = nil
+    }
+
     // MARK: - Photo Loading
 
     func loadImages() {

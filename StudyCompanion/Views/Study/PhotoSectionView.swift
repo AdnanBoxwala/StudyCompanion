@@ -1,9 +1,11 @@
 import SwiftUI
 import PhotosUI
+import VisionKit
 
 struct PhotoSectionView: View {
     let viewModel: StudyViewModel
     @Binding var imageToView: UIImage?
+    @State private var showScanner = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -28,20 +30,47 @@ struct PhotoSectionView: View {
                     ImageViewer(image: image)
                 }
             } else {
-                PhotosPicker(
-                    selection: Bindable(viewModel).selectedPhotoItems,
-                    maxSelectionCount: 3,
-                    matching: .images
-                ) {
-                    Label("Select Photos (up to 3)", systemImage: "photo.on.rectangle.angled")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 200)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
-                                .foregroundStyle(.secondary)
-                        )
+                VStack(spacing: 12) {
+                    PhotosPicker(
+                        selection: Bindable(viewModel).selectedPhotoItems,
+                        maxSelectionCount: 3,
+                        matching: .images
+                    ) {
+                        Label("Select Photos", systemImage: "photo.on.rectangle.angled")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 90)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
+                                    .foregroundStyle(.secondary)
+                            )
+                    }
+
+                    Button {
+                        showScanner = true
+                    } label: {
+                        Label("Scan Pages", systemImage: "doc.viewfinder")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 90)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
+                                    .foregroundStyle(.secondary)
+                            )
+                    }
+                }
+                .fullScreenCover(isPresented: $showScanner) {
+                    DocumentScannerView(
+                        onScanComplete: { images in
+                            showScanner = false
+                            viewModel.addScannedImages(images)
+                        },
+                        onCancel: {
+                            showScanner = false
+                        }
+                    )
                 }
             }
         }
