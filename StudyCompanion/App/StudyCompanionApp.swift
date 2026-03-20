@@ -14,9 +14,13 @@ struct StudyCompanionApp: App {
 
     init() {
         do {
+            let config = ModelConfiguration(
+                cloudKitDatabase: .private("iCloud.com.github.AdnanBoxwala.StudyCompanion")
+            )
             container = try ModelContainer(
-                for: Schema(SchemaV1.models),
-                migrationPlan: StudyCompanionMigrationPlan.self
+                for: Schema(SchemaV2.models),
+                migrationPlan: StudyCompanionMigrationPlan.self,
+                configurations: config
             )
         } catch {
             fatalError("Failed to create model container: \(error)")

@@ -25,3 +25,51 @@
 //    - Add progress UI ("Processing batch 2 of 4...")
 //    - Handle partial failure (if one batch fails, show results from successful batches)
 //    - Chunk size needs experimentation based on FoundationModels context window limit
+
+// MARK: - iCloud Sync & Multi-Device Support
+//
+// Goal: Scan on iPhone (even without Apple Intelligence), process on Mac/iPad
+// with Apple Intelligence, keep everything in sync via iCloud.
+//
+// Phase 1: Make SwiftData models CloudKit-compatible
+//    - Add default values to all non-optional properties in Subject, Chapter, StudyEntry
+//      (CloudKit requires defaults since records can arrive in any order)
+//    - Ensure all relationships are optional on both sides
+//    - No unique constraints allowed
+//    - Add schema migration V1 → V2 in SchemaVersions.swift
+//
+// Phase 2: Configure CloudKit sync
+//    - Enable iCloud capability with CloudKit in Xcode (Signing & Capabilities)
+//    - Enable Background Modes → Remote notifications
+//    - Create/select a CloudKit container (e.g. iCloud.com.github.AdnanBoxwala.StudyCompanion)
+//    - Update ModelConfiguration in StudyCompanionApp.swift:
+//      ModelConfiguration(cloudKitDatabase: .private("iCloud.com.github.AdnanBoxwala.StudyCompanion"))
+//
+// Phase 3: Update Library UI for incomplete entries
+//    - StudyEntryDetailView: when summary/flashcards are nil, show "Not yet generated"
+//      with a Generate button (if AI is available on this device) or an info message (if not)
+//    - ChapterDetailView: show a badge/subtitle on entries that are text-only ("Text only")
+//    - This enables the cross-device workflow: save text on iPhone → generate AI on Mac
+//
+// Phase 4: Multi-platform support
+//    - Mac Catalyst (easiest): check "Mac" under Supported Destinations
+//      - Document scanner won't be available on Mac (no camera)
+//      - Photo import and AI processing will work
+//      - Verify layout works on larger screens
+//    - iPad: current iPhone app runs on iPad, verify layout
+//    - Consider native macOS target later for better Mac UX
+//
+// Phase 5: Sync status indicator
+//    - Show sync status in the UI (syncing, up to date, error)
+//    - Handle merge conflicts gracefully
+//    - Consider using NSPersistentCloudKitContainer event notifications
+//
+// Sync workflow:
+//   1. iPhone: scan pages → extract text (Vision works on all devices) → save
+//   2. iCloud syncs StudyEntry (text only, no summary/flashcards) to Mac
+//   3. Mac: open entry from Library → tap Summarize / Generate Flashcards
+//   4. iCloud syncs updated entry (with summary + flashcards) back to iPhone
+//   5. iPhone: open Library → see complete study entry
+//
+// Storage: only sync text data (extracted text, summaries, flashcards, metadata).
+// Do NOT sync scanned images — they are large and not needed for AI processing.

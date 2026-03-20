@@ -3,8 +3,8 @@ import SwiftData
 
 @Model
 final class StudyEntry {
-    var topicName: String
-    var extractedText: String
+    var topicName: String = ""
+    var extractedText: String = ""
     var summaryText: String?
     var keyPoints: [String]?
     var storedFlashcards: [FlashcardData]?

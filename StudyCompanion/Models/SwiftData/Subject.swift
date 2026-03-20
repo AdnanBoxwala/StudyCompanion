@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 final class Subject {
-    var name: String
+    var name: String = ""
     @Relationship(deleteRule: .cascade, inverse: \Chapter.subject)
     var chapters: [Chapter] = []
     var createdAt: Date = Date()

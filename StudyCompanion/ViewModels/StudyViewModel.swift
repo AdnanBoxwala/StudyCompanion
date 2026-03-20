@@ -184,7 +184,7 @@ final class StudyViewModel {
     // MARK: - Saving
 
     var canSave: Bool {
-        !extractedText.isEmpty && (summary != nil || !flashcards.isEmpty)
+        !extractedText.isEmpty
     }
 
     func save(subjectName: String, chapterName: String, topicName: String, modelContext: ModelContext) {
