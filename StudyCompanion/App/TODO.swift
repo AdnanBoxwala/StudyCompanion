@@ -58,10 +58,11 @@
 //    - iPad: current iPhone app runs on iPad, verify layout
 //    - Consider native macOS target later for better Mac UX
 //
-// Phase 5: Sync status indicator
-//    - Show sync status in the UI (syncing, up to date, error)
-//    - Handle merge conflicts gracefully
-//    - Consider using NSPersistentCloudKitContainer event notifications
+// Phase 5: Sync status indicator ✅
+//    - SyncMonitor: observes NSPersistentCloudKitContainer.eventChangedNotification
+//    - Exposes sync state (notStarted, syncing, synced, error, notAvailable)
+//    - LibraryView toolbar: shows iCloud icon with color + pulse animation when syncing
+//    - Injected via SwiftUI Environment from StudyCompanionApp
 //
 // Sync workflow:
 //   1. iPhone: scan pages → extract text (Vision works on all devices) → save

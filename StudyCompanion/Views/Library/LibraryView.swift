@@ -4,6 +4,7 @@ import SwiftData
 struct LibraryView: View {
     @Query(sort: \Subject.name) private var subjects: [Subject]
     @Environment(\.modelContext) private var modelContext
+    @Environment(SyncMonitor.self) private var syncMonitor
 
     var body: some View {
         NavigationStack {
@@ -34,6 +35,15 @@ struct LibraryView: View {
                 }
             }
             .navigationTitle("Library")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Label(syncMonitor.statusLabel, systemImage: syncMonitor.statusIcon)
+                        .labelStyle(.iconOnly)
+                        .foregroundStyle(syncMonitor.statusColor)
+                        .symbolEffect(.pulse, isActive: syncMonitor.syncState.isSyncing)
+                        .help(syncMonitor.statusLabel)
+                }
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import SwiftData
 @main
 struct StudyCompanionApp: App {
     let container: ModelContainer
+    @State private var syncMonitor = SyncMonitor()
 
     init() {
         let schema = Schema(SchemaV1.models)
@@ -44,6 +45,7 @@ struct StudyCompanionApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(syncMonitor)
         }
         .modelContainer(container)
     }
