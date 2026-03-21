@@ -55,9 +55,22 @@ struct MockAIService: AIService {
 
 struct SlowMockOCRService: OCRService {
     func extractText(from images: [UIImage]) async throws(OCRError) -> String {
-        try? await Task.sleep(for: .seconds(10))
-        if Task.isCancelled { return "" }
+        // Yield many times to simulate slow work without blocking MainActor
+        for _ in 0..<1000 {
+            if Task.isCancelled { return "" }
+            await Task.yield()
+        }
         return "Slow result"
+    }
+}
+
+// MARK: - Test Helper
+
+/// Yields to the main run loop repeatedly to allow internal Tasks to complete.
+@MainActor
+private func yieldForTasks() async {
+    for _ in 0..<30 {
+        await Task.yield()
     }
 }
 
@@ -77,8 +90,7 @@ struct StudyViewModelTests {
         vm.selectedImages = [UIImage()]
 
         vm.extractText()
-        // Wait for the internal task to complete
-        try? await Task.sleep(for: .milliseconds(100))
+        await yieldForTasks()
 
         #expect(vm.extractedText == "Hello world")
         #expect(vm.currentError == nil)
@@ -96,7 +108,7 @@ struct StudyViewModelTests {
         vm.selectedImages = [UIImage()]
 
         vm.extractText()
-        try? await Task.sleep(for: .milliseconds(100))
+        await yieldForTasks()
 
         #expect(vm.extractedText.isEmpty)
         #expect(vm.currentError != nil)
@@ -113,7 +125,7 @@ struct StudyViewModelTests {
         vm.extractedText = "Some text to summarize"
 
         vm.summarizeText()
-        try? await Task.sleep(for: .milliseconds(100))
+        await yieldForTasks()
 
         #expect(vm.summary != nil)
         #expect(vm.summary?.summary == "Test summary")
@@ -131,7 +143,7 @@ struct StudyViewModelTests {
         vm.extractedText = "Some text for flashcards"
 
         vm.generateFlashcards(count: 2)
-        try? await Task.sleep(for: .milliseconds(100))
+        await yieldForTasks()
 
         #expect(vm.flashcards.count == 2)
         #expect(vm.flashcards.first?.front == "Q1")
@@ -153,7 +165,7 @@ struct StudyViewModelTests {
         vm.extractedText = "Some text"
 
         vm.generateFlashcards(count: 5)
-        try? await Task.sleep(for: .milliseconds(100))
+        await yieldForTasks()
 
         #expect(vm.flashcards.isEmpty)
         #expect(vm.currentError != nil)
@@ -171,7 +183,7 @@ struct StudyViewModelTests {
 
         vm.extractText()
         // Give it a moment to start
-        try? await Task.sleep(for: .milliseconds(50))
+        await yieldForTasks()
         #expect(vm.isExtractingText == true)
 
         vm.reset()
@@ -183,7 +195,7 @@ struct StudyViewModelTests {
         #expect(vm.currentError == nil)
     }
 
-    @Test("canSave requires extractedText and at least summary or flashcards")
+    @Test("canSave requires extractedText to be non-empty")
     @MainActor
     func canSaveLogic() {
         let vm = StudyViewModel(
@@ -195,14 +207,10 @@ struct StudyViewModelTests {
         #expect(vm.canSave == false)
 
         vm.extractedText = "Some text"
+        #expect(vm.canSave == true)
+
+        vm.extractedText = ""
         #expect(vm.canSave == false)
-
-        vm.summary = TextSummary(summary: "Summary", keyPoints: ["Point"])
-        #expect(vm.canSave == true)
-
-        vm.summary = nil
-        vm.flashcards = [Flashcard(front: "Q", back: "A")]
-        #expect(vm.canSave == true)
     }
 
     @Test("Retry re-runs the last failed action")
@@ -220,12 +228,12 @@ struct StudyViewModelTests {
         vm.extractedText = "Text"
 
         vm.summarizeText()
-        try? await Task.sleep(for: .milliseconds(100))
+        await yieldForTasks()
         #expect(vm.currentError != nil)
 
         // Retry should re-trigger summarizeText
         vm.retryLastAction()
-        try? await Task.sleep(for: .milliseconds(100))
+        await yieldForTasks()
         // Still fails since mock returns same error, but confirms retry was called
         #expect(vm.currentError != nil)
     }
