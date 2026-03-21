@@ -31,27 +31,26 @@
 // Goal: Scan on iPhone (even without Apple Intelligence), process on Mac/iPad
 // with Apple Intelligence, keep everything in sync via iCloud.
 //
-// Phase 1: Make SwiftData models CloudKit-compatible
-//    - Add default values to all non-optional properties in Subject, Chapter, StudyEntry
-//      (CloudKit requires defaults since records can arrive in any order)
-//    - Ensure all relationships are optional on both sides
-//    - No unique constraints allowed
-//    - Add schema migration V1 → V2 in SchemaVersions.swift
+// Phase 1: Make SwiftData models CloudKit-compatible ✅
+//    - Added default values to all non-optional properties in Subject, Chapter, StudyEntry
+//    - All relationships are optional on both sides
+//    - No unique constraints
+//    - Added schema migration V1 → V2 in SchemaVersions.swift
 //
-// Phase 2: Configure CloudKit sync
-//    - Enable iCloud capability with CloudKit in Xcode (Signing & Capabilities)
-//    - Enable Background Modes → Remote notifications
-//    - Create/select a CloudKit container (e.g. iCloud.com.github.AdnanBoxwala.StudyCompanion)
-//    - Update ModelConfiguration in StudyCompanionApp.swift:
-//      ModelConfiguration(cloudKitDatabase: .private("iCloud.com.github.AdnanBoxwala.StudyCompanion"))
+// Phase 2: Configure CloudKit sync ✅
+//    - Enabled iCloud capability with CloudKit in Xcode (Signing & Capabilities)
+//    - Enabled Background Modes → Remote notifications
+//    - Created CloudKit container: iCloud.com.github.AdnanBoxwala.StudyCompanion
+//    - Updated ModelConfiguration in StudyCompanionApp.swift with cloudKitDatabase: .private(...)
 //
-// Phase 3: Update Library UI for incomplete entries
-//    - StudyEntryDetailView: when summary/flashcards are nil, show "Not yet generated"
-//      with a Generate button (if AI is available on this device) or an info message (if not)
-//    - ChapterDetailView: show a badge/subtitle on entries that are text-only ("Text only")
-//    - This enables the cross-device workflow: save text on iPhone → generate AI on Mac
+// Phase 3: Update Library UI for incomplete entries ✅
+//    - StudyEntryDetailView: shows "Not yet generated" with Generate button (if AI available)
+//      or info message (if AI unavailable) for missing summary/flashcards
+//    - ChapterDetailView: shows "Text only" badge on entries missing both summary and flashcards
+//    - LibraryEntryViewModel: handles AI generation on saved entries, updates SwiftData in place
+//    - Enables cross-device workflow: save text on iPhone → generate AI on Mac
 //
-// Phase 4: Multi-platform support
+// Phase 4: Multi-platform support ✅
 //    - Mac Catalyst (easiest): check "Mac" under Supported Destinations
 //      - Document scanner won't be available on Mac (no camera)
 //      - Photo import and AI processing will work
@@ -73,3 +72,4 @@
 //
 // Storage: only sync text data (extracted text, summaries, flashcards, metadata).
 // Do NOT sync scanned images — they are large and not needed for AI processing.
+

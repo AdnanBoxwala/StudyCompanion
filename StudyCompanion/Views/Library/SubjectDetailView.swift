@@ -6,7 +6,7 @@ struct SubjectDetailView: View {
     @Environment(\.modelContext) private var modelContext
 
     private var sortedChapters: [Chapter] {
-        subject.chapters.sorted(by: { $0.name < $1.name })
+        (subject.chapters ?? []).sorted(by: { $0.name < $1.name })
     }
 
     var body: some View {
@@ -18,7 +18,7 @@ struct SubjectDetailView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(chapter.name)
                             .font(.headline)
-                        Text("\(chapter.entries.count) entry/entries")
+                        Text("\((chapter.entries ?? []).count) entry/entries")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

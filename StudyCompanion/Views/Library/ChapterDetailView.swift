@@ -6,7 +6,7 @@ struct ChapterDetailView: View {
     @Environment(\.modelContext) private var modelContext
 
     private var sortedEntries: [StudyEntry] {
-        chapter.entries.sorted(by: { $0.createdAt > $1.createdAt })
+        (chapter.entries ?? []).sorted(by: { $0.createdAt > $1.createdAt })
     }
 
     var body: some View {
@@ -29,6 +29,11 @@ struct ChapterDetailView: View {
                                 Label("Flashcards", systemImage: "rectangle.on.rectangle")
                                     .font(.caption)
                                     .foregroundStyle(.orange)
+                            }
+                            if !entry.hasSummary && !entry.hasFlashcards {
+                                Label("Text only", systemImage: "doc.text")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
 

@@ -13,17 +13,31 @@ struct StudyCompanionApp: App {
     let container: ModelContainer
 
     init() {
+        let schema = Schema(SchemaV1.models)
+
+        // Try CloudKit-backed storage first, fall back to local-only if it fails
+        // (e.g. simulator without iCloud sign-in, or container not yet provisioned)
         do {
-            let config = ModelConfiguration(
+            let cloudConfig = ModelConfiguration(
                 cloudKitDatabase: .private("iCloud.com.github.AdnanBoxwala.StudyCompanion")
             )
             container = try ModelContainer(
-                for: Schema(SchemaV2.models),
+                for: schema,
                 migrationPlan: StudyCompanionMigrationPlan.self,
-                configurations: config
+                configurations: cloudConfig
             )
         } catch {
-            fatalError("Failed to create model container: \(error)")
+            print("CloudKit container failed, falling back to local storage: \(error)")
+            do {
+                let localConfig = ModelConfiguration(cloudKitDatabase: .none)
+                container = try ModelContainer(
+                    for: schema,
+                    migrationPlan: StudyCompanionMigrationPlan.self,
+                    configurations: localConfig
+                )
+            } catch {
+                fatalError("Failed to create model container: \(error)")
+            }
         }
     }
 

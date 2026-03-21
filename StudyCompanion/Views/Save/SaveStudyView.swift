@@ -23,7 +23,7 @@ struct SaveStudyView: View {
     }
 
     private var chaptersForSelectedSubject: [Chapter] {
-        selectedSubject?.chapters.sorted(by: { $0.name < $1.name }) ?? []
+        (selectedSubject?.chapters ?? []).sorted(by: { $0.name < $1.name })
     }
 
     var body: some View {

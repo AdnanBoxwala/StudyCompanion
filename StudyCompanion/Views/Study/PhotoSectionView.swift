@@ -47,18 +47,20 @@ struct PhotoSectionView: View {
                             )
                     }
 
-                    Button {
-                        showScanner = true
-                    } label: {
-                        Label("Scan Pages", systemImage: "doc.viewfinder")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 90)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
-                                    .foregroundStyle(.secondary)
-                            )
+                    if VNDocumentCameraViewController.isSupported {
+                        Button {
+                            showScanner = true
+                        } label: {
+                            Label("Scan Pages", systemImage: "doc.viewfinder")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 90)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
+                                        .foregroundStyle(.secondary)
+                                )
+                        }
                     }
                 }
                 .fullScreenCover(isPresented: $showScanner) {

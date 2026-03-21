@@ -201,7 +201,7 @@ final class StudyViewModel {
 
         // Find or create chapter under that subject
         let chapter: Chapter
-        if let existing = subject.chapters.first(where: { $0.name == chapterName }) {
+        if let existing = (subject.chapters ?? []).first(where: { $0.name == chapterName }) {
             chapter = existing
         } else {
             chapter = Chapter(name: chapterName, subject: subject)

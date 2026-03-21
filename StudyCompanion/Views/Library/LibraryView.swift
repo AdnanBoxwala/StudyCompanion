@@ -23,7 +23,7 @@ struct LibraryView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(subject.name)
                                         .font(.headline)
-                                    Text("\(subject.chapters.count) chapter(s)")
+                                    Text("\((subject.chapters ?? []).count) chapter(s)")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
