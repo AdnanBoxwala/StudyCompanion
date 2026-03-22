@@ -64,3 +64,13 @@ struct ActionButtonsView: View {
         }
     }
 }
+
+#Preview {
+    @Previewable @State var flashcardCount = 5
+
+    ActionButtonsView(
+        viewModel: StudyViewModel(),
+        flashcardCount: $flashcardCount
+    )
+    .padding()
+}

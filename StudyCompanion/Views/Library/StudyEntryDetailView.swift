@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 import FoundationModels
 
@@ -131,4 +132,36 @@ struct StudyEntryDetailView: View {
                 .foregroundStyle(.secondary)
         }
     }
+}
+
+#Preview("With Summary & Flashcards") {
+    @Previewable @State var entry = StudyEntry(
+        topicName: "Newton's Laws",
+        extractedText: "An object in motion stays in motion...",
+        summaryText: "Newton's three laws describe the relationship between forces and motion.",
+        keyPoints: ["Inertia", "F=ma", "Action-Reaction"],
+        storedFlashcards: [
+            FlashcardData(front: "What is Newton's 1st law?", back: "Law of inertia"),
+            FlashcardData(front: "What is F=ma?", back: "Newton's 2nd law")
+        ],
+        chapter: Chapter(name: "Mechanics", subject: Subject(name: "Physics"))
+    )
+
+    NavigationStack {
+        StudyEntryDetailView(entry: entry)
+    }
+    .modelContainer(for: Subject.self, inMemory: true)
+}
+
+#Preview("Text Only") {
+    @Previewable @State var entry = StudyEntry(
+        topicName: "The Roman Republic",
+        extractedText: "The Roman Republic was the era of classical Roman civilization...",
+        chapter: Chapter(name: "Ancient Rome", subject: Subject(name: "History"))
+    )
+
+    NavigationStack {
+        StudyEntryDetailView(entry: entry)
+    }
+    .modelContainer(for: Subject.self, inMemory: true)
 }

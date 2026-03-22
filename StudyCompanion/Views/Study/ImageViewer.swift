@@ -60,3 +60,7 @@ struct ImageViewer: View {
         }
     }
 }
+
+#Preview {
+    ImageViewer(image: UIImage(systemName: "photo.artframe")!)
+}

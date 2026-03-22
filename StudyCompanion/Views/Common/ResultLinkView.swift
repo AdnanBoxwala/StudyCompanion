@@ -27,3 +27,12 @@ struct ResultLinkView: View {
         .buttonStyle(.plain)
     }
 }
+
+#Preview {
+    VStack(spacing: 12) {
+        ResultLinkView(title: "Extracted Text", icon: "doc.text", color: .gray) {}
+        ResultLinkView(title: "Summary", icon: "text.badge.star", color: .blue) {}
+        ResultLinkView(title: "Flashcards (5)", icon: "rectangle.on.rectangle", color: .orange) {}
+    }
+    .padding()
+}

@@ -85,3 +85,10 @@ struct PhotoSectionView: View {
 extension UIImage: @retroactive Identifiable {
     public var id: ObjectIdentifier { ObjectIdentifier(self) }
 }
+
+#Preview {
+    PhotoSectionView(
+        viewModel: StudyViewModel(),
+        imageToView: .constant(nil)
+    )
+}

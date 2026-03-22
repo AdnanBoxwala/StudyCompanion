@@ -31,3 +31,13 @@ struct ErrorBannerView: View {
         )
     }
 }
+
+#Preview("Retryable Error") {
+    ErrorBannerView(error: .ai(.rateLimited), onRetry: {})
+        .padding()
+}
+
+#Preview("Non-Retryable Error") {
+    ErrorBannerView(error: .ocr(.noTextFound), onRetry: {})
+        .padding()
+}

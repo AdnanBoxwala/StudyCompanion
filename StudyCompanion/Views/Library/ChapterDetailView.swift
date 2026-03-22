@@ -55,3 +55,15 @@ struct ChapterDetailView: View {
         }
     }
 }
+
+#Preview {
+    @Previewable @State var chapter = Chapter(
+        name: "Biology",
+        subject: Subject(name: "Science")
+    )
+
+    NavigationStack {
+        ChapterDetailView(chapter: chapter)
+    }
+    .modelContainer(for: Subject.self, inMemory: true)
+}

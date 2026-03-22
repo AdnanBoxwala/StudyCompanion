@@ -112,3 +112,8 @@ struct SaveStudyView: View {
         dismiss()
     }
 }
+
+#Preview {
+    SaveStudyView(viewModel: StudyViewModel())
+        .modelContainer(for: Subject.self, inMemory: true)
+}

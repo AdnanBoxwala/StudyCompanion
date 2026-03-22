@@ -53,3 +53,9 @@ struct LibraryView: View {
         }
     }
 }
+
+#Preview {
+    LibraryView()
+        .modelContainer(for: Subject.self, inMemory: true)
+        .environment(SyncMonitor())
+}

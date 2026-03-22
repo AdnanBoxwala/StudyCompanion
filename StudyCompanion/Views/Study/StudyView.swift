@@ -128,3 +128,7 @@ struct StudyView: View {
     }
 
 }
+
+#Preview {
+    StudyView()
+}

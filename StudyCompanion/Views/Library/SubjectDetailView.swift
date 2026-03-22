@@ -36,3 +36,12 @@ struct SubjectDetailView: View {
         }
     }
 }
+
+#Preview {
+    @Previewable @State var subject = Subject(name: "Mathematics")
+
+    NavigationStack {
+        SubjectDetailView(subject: subject)
+    }
+    .modelContainer(for: Subject.self, inMemory: true)
+}
