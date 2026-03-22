@@ -60,11 +60,7 @@ struct StudyView: View {
                 if viewModel.isExtractingText {
                     ProgressView("Extracting text...")
                 }
-                if let error = viewModel.currentError {
-                    ErrorBannerView(error: error) {
-                        viewModel.retryLastAction()
-                    }
-                }
+
                 if !viewModel.extractedText.isEmpty {
                     ResultLinkView(
                         title: "Extracted Text",
@@ -124,6 +120,23 @@ struct StudyView: View {
                     }
                 }
             }
+        }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { viewModel.presentableError != nil },
+                set: { if !$0 { viewModel.currentError = nil } }
+            ),
+            presenting: viewModel.presentableError
+        ) { error in
+            if error.isRetryable {
+                Button("Retry") { viewModel.retryLastAction() }
+                Button("Cancel", role: .cancel) { }
+            } else {
+                Button("OK", role: .cancel) { }
+            }
+        } message: { error in
+            Text(error.errorDescription ?? "An error occurred.")
         }
     }
 

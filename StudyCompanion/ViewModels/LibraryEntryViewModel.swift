@@ -15,6 +15,13 @@ final class LibraryEntryViewModel {
     var isGeneratingFlashcards = false
     var currentError: StudyError?
 
+    /// Returns the current error only if it should be presented to the user.
+    /// Silent errors (e.g. cancelled) return nil.
+    var presentableError: StudyError? {
+        guard let error = currentError, error.errorDescription != nil else { return nil }
+        return error
+    }
+
     var modelAvailability: SystemLanguageModel.Availability {
         SystemLanguageModel.default.availability
     }
@@ -28,6 +35,14 @@ final class LibraryEntryViewModel {
     private var summarizationTask: Task<Void, Never>?
     private var flashcardTask: Task<Void, Never>?
 
+    /// Tracks the last failed action for retry support.
+    private var lastAction: LastAction?
+
+    private enum LastAction {
+        case summarize
+        case generateFlashcards(count: Int)
+    }
+
     init(entry: StudyEntry, modelContext: ModelContext, ai: (any AIService)? = nil) {
         self.entry = entry
         self.modelContext = modelContext
@@ -38,6 +53,7 @@ final class LibraryEntryViewModel {
 
     func generateSummary() {
         summarizationTask?.cancel()
+        lastAction = .summarize
         summarizationTask = Task {
             guard !entry.extractedText.isEmpty else { return }
             isSummarizing = true
@@ -63,6 +79,7 @@ final class LibraryEntryViewModel {
 
     func generateFlashcards(count: Int) {
         flashcardTask?.cancel()
+        lastAction = .generateFlashcards(count: count)
         flashcardTask = Task {
             guard !entry.extractedText.isEmpty else { return }
             isGeneratingFlashcards = true
@@ -82,6 +99,18 @@ final class LibraryEntryViewModel {
             } catch {
                 guard !Task.isCancelled else { return }
             }
+        }
+    }
+
+    // MARK: - Retry
+
+    func retryLastAction() {
+        guard let action = lastAction else { return }
+        switch action {
+        case .summarize:
+            generateSummary()
+        case .generateFlashcards(let count):
+            generateFlashcards(count: count)
         }
     }
 }

@@ -213,4 +213,101 @@ struct LibraryEntryViewModelTests {
         let vm = LibraryEntryViewModel(entry: entry, modelContext: context)
         #expect(vm.currentError == nil)
     }
+
+    // MARK: - Retry
+
+    @Test("retryLastAction retries summary generation after failure")
+    @MainActor
+    func retryLastActionSummary() async throws {
+        let (container, context, entry) = try makeTestContext()
+        _ = container
+
+        let mockAI = MockAIService(
+            summarizeResult: .failure(.rateLimited),
+            flashcardsResult: .success([])
+        )
+        let vm = LibraryEntryViewModel(entry: entry, modelContext: context, ai: mockAI)
+
+        vm.generateSummary()
+        await yieldForTasks()
+        #expect(vm.currentError != nil)
+
+        // Retry should re-trigger generateSummary — same mock so still fails
+        vm.retryLastAction()
+        await yieldForTasks()
+        #expect(vm.currentError != nil)
+        #expect(entry.summaryText == nil)
+    }
+
+    @Test("retryLastAction retries flashcard generation after failure")
+    @MainActor
+    func retryLastActionFlashcards() async throws {
+        let (container, context, entry) = try makeTestContext()
+        _ = container
+
+        let mockAI = MockAIService(
+            summarizeResult: .success(TextSummary(summary: "", keyPoints: [])),
+            flashcardsResult: .failure(.contextWindowExceeded)
+        )
+        let vm = LibraryEntryViewModel(entry: entry, modelContext: context, ai: mockAI)
+
+        vm.generateFlashcards(count: 5)
+        await yieldForTasks()
+        #expect(vm.currentError != nil)
+
+        // Retry should re-trigger generateFlashcards with same count
+        vm.retryLastAction()
+        await yieldForTasks()
+        #expect(vm.currentError != nil)
+        #expect(entry.storedFlashcards == nil)
+    }
+
+    // MARK: - Presentable Error
+
+    @Test("presentableError returns error for non-cancelled errors")
+    @MainActor
+    func presentableErrorNonCancelled() async throws {
+        let (container, context, entry) = try makeTestContext()
+        _ = container
+
+        let mockAI = MockAIService(
+            summarizeResult: .failure(.rateLimited),
+            flashcardsResult: .success([])
+        )
+        let vm = LibraryEntryViewModel(entry: entry, modelContext: context, ai: mockAI)
+
+        vm.generateSummary()
+        await yieldForTasks()
+
+        #expect(vm.currentError != nil)
+        #expect(vm.presentableError != nil)
+        #expect(vm.presentableError?.errorDescription != nil)
+    }
+
+    @Test("presentableError returns nil for cancelled errors")
+    @MainActor
+    func presentableErrorCancelled() throws {
+        let (container, context, entry) = try makeTestContext()
+        _ = container
+
+        let vm = LibraryEntryViewModel(entry: entry, modelContext: context, ai: MockAIService())
+
+        // Manually set a cancelled error
+        vm.currentError = .ai(.cancelled)
+
+        #expect(vm.currentError != nil)
+        #expect(vm.presentableError == nil)
+    }
+
+    @Test("presentableError returns nil when no error")
+    @MainActor
+    func presentableErrorNil() throws {
+        let (container, context, entry) = try makeTestContext()
+        _ = container
+
+        let vm = LibraryEntryViewModel(entry: entry, modelContext: context, ai: MockAIService())
+
+        #expect(vm.currentError == nil)
+        #expect(vm.presentableError == nil)
+    }
 }

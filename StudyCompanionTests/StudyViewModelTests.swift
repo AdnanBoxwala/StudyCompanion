@@ -237,6 +237,56 @@ struct StudyViewModelTests {
         // Still fails since mock returns same error, but confirms retry was called
         #expect(vm.currentError != nil)
     }
+    @Test("presentableError returns error for non-cancelled errors")
+    @MainActor
+    func presentableErrorNonCancelled() async {
+        let mockAI = MockAIService(
+            summarizeResult: .failure(.rateLimited),
+            flashcardsResult: .success([])
+        )
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: mockAI
+        )
+        vm.extractedText = "Text"
+
+        vm.summarizeText()
+        await yieldForTasks()
+
+        #expect(vm.currentError != nil)
+        #expect(vm.presentableError != nil)
+        #expect(vm.presentableError?.errorDescription != nil)
+    }
+
+    @Test("presentableError returns nil for cancelled errors")
+    @MainActor
+    func presentableErrorCancelled() {
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: MockAIService()
+        )
+
+        // Manually set a cancelled error
+        vm.currentError = .ai(.cancelled)
+
+        #expect(vm.currentError != nil)
+        #expect(vm.presentableError == nil)
+    }
+
+    @Test("presentableError returns nil when no error")
+    @MainActor
+    func presentableErrorNil() {
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: MockAIService()
+        )
+
+        #expect(vm.currentError == nil)
+        #expect(vm.presentableError == nil)
+    }
 }
 
 // MARK: - StudyError Tests

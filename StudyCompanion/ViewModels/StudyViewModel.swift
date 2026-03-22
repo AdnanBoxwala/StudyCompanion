@@ -40,6 +40,13 @@ final class StudyViewModel {
 
     // MARK: - General State
     var currentError: StudyError?
+
+    /// Returns the current error only if it should be presented to the user.
+    /// Silent errors (e.g. cancelled) return nil.
+    var presentableError: StudyError? {
+        guard let error = currentError, error.errorDescription != nil else { return nil }
+        return error
+    }
     var modelAvailability: SystemLanguageModel.Availability {
         SystemLanguageModel.default.availability
     }

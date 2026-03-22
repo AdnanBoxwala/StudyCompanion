@@ -27,10 +27,7 @@ struct StudyEntryDetailView: View {
             // MARK: - Flashcards
             flashcardsSection
 
-            // MARK: - Error
-            if let error = viewModel?.currentError {
-                ErrorBannerView(error: error, onRetry: {})
-            }
+
         }
         .navigationTitle(entry.topicName)
         .navigationBarTitleDisplayMode(.inline)
@@ -41,6 +38,23 @@ struct StudyEntryDetailView: View {
                     modelContext: modelContext
                 )
             }
+        }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { viewModel?.presentableError != nil },
+                set: { if !$0 { viewModel?.currentError = nil } }
+            ),
+            presenting: viewModel?.presentableError
+        ) { error in
+            if error.isRetryable {
+                Button("Retry") { viewModel?.retryLastAction() }
+                Button("Cancel", role: .cancel) { }
+            } else {
+                Button("OK", role: .cancel) { }
+            }
+        } message: { error in
+            Text(error.errorDescription ?? "An error occurred.")
         }
     }
 
