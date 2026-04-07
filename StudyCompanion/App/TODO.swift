@@ -79,14 +79,16 @@
 //
 // 3. (Completed — see Pre-Release Checklist #1)
 //
-// 4. Redesign StudyEntryDetailView with a richer layout.
-//    - Replace plain List with a ScrollView-based design
-//    - Use cards/sections with background fills, icons, and spacing
-//    - Show summary text inline (preview snippet) instead of just a nav link
-//    - Show flashcard count with a visual card preview
-//    - Add extracted text preview snippet
-//    - Make Generate buttons more prominent with styled cards
-//    - Aim for a visually engaging detail page, not a settings-style list
+// 4. Redesign StudyEntryDetailView with a richer layout. ✅
+//    - Replaced List with ScrollView + material cards (RoundedRectangle + .regularMaterial)
+//    - Each section (Extracted Text, Summary, Flashcards) is a styled card with tinted icon
+//    - Extracted text shows 3-line preview snippet
+//    - Summary shows inline preview + key point capsule chips (FlowLayout)
+//    - Flashcards show count badge + mini preview of first card's front text
+//    - Generate buttons styled as prominent tinted cards with sparkles icon
+//    - Animated transitions: .blurReplace between generate/content states,
+//      .smooth on summary/flashcard appearance, .numericText on flashcard count,
+//      .easeInOut on progress indicators
 //
 // 5. Batch processing for larger documents.
 //    - Remove or raise the 3-photo selection limit
