@@ -11,7 +11,7 @@ import SwiftData
 @main
 struct StudyCompanionApp: App {
     let container: ModelContainer
-    @State private var syncMonitor = SyncMonitor()
+    @State private var syncMonitor: SyncMonitor
 
     init() {
         let schema = Schema(SchemaV1.models)
@@ -22,6 +22,7 @@ struct StudyCompanionApp: App {
             do {
                 let testConfig = ModelConfiguration(isStoredInMemoryOnly: true)
                 container = try ModelContainer(for: schema, configurations: testConfig)
+                _syncMonitor = State(initialValue: SyncMonitor())
             } catch {
                 fatalError("Failed to create test model container: \(error)")
             }
@@ -37,6 +38,7 @@ struct StudyCompanionApp: App {
                     migrationPlan: StudyCompanionMigrationPlan.self,
                     configurations: cloudConfig
                 )
+                _syncMonitor = State(initialValue: SyncMonitor())
             } catch {
                 print("CloudKit container failed, falling back to local storage: \(error)")
                 do {
@@ -46,6 +48,7 @@ struct StudyCompanionApp: App {
                         migrationPlan: StudyCompanionMigrationPlan.self,
                         configurations: localConfig
                     )
+                    _syncMonitor = State(initialValue: SyncMonitor(isCloudKitAvailable: false))
                 } catch {
                     fatalError("Failed to create model container: \(error)")
                 }

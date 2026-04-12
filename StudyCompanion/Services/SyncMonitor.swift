@@ -21,7 +21,10 @@ final class SyncMonitor {
     private(set) var syncState: SyncState = .notStarted
     private(set) var lastSyncDate: Date?
 
-    init() {
+    init(isCloudKitAvailable: Bool = true) {
+        if !isCloudKitAvailable {
+            syncState = .notAvailable
+        }
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(eventChanged(_:)),
