@@ -7,14 +7,14 @@
 //    - Added retryLastAction() to LibraryEntryViewModel
 //    - Deleted ErrorBannerView.swift
 //
-// 2. Privacy policy URL.
+// 2. Privacy policy URL. ✅
 //    - Required by App Store Connect — submission will be rejected without one
 //    - Host on GitHub Pages or a simple static site
 //    - Describe: on-device OCR (Vision), on-device AI (Apple Intelligence),
 //      iCloud sync (private database, only user's own data), no third-party analytics
 //    - No user data leaves the device except via iCloud (Apple's infrastructure)
 //
-// 3. App Store metadata.
+// 3. App Store metadata. ✅
 //    - App description and keywords for App Store listing
 //    - Screenshots: minimum 6.7" iPhone (iPhone 15 Pro Max) and 6.5" iPhone (iPhone 11 Pro Max)
 //    - Category: Education

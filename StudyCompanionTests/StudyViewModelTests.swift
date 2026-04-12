@@ -1,4 +1,5 @@
 import PhotosUI
+import SwiftData
 import SwiftUI
 import Testing
 @testable import StudyCompanion
@@ -287,6 +288,189 @@ struct StudyViewModelTests {
         #expect(vm.currentError == nil)
         #expect(vm.presentableError == nil)
     }
+
+    // MARK: - Summarize Failure
+
+    @Test("Summarize sets error on AI failure")
+    @MainActor
+    func summarizeTextFailure() async {
+        let mockAI = MockAIService(
+            summarizeResult: .failure(.rateLimited),
+            flashcardsResult: .success([])
+        )
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: mockAI
+        )
+        vm.extractedText = "Some text"
+
+        vm.summarizeText()
+        await yieldForTasks()
+
+        #expect(vm.summary == nil)
+        #expect(vm.currentError != nil)
+        #expect(vm.isSummarizing == false)
+    }
+
+    // MARK: - Add Scanned Images
+
+    @Test("addScannedImages sets images and clears state")
+    @MainActor
+    func addScannedImagesClearsState() {
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: MockAIService()
+        )
+        vm.extractedText = "Old text"
+        vm.currentError = .ocr(.noTextFound)
+
+        let images = [UIImage(), UIImage()]
+        vm.addScannedImages(images)
+
+        #expect(vm.selectedImages.count == 2)
+        #expect(vm.selectedPhotoItems.isEmpty)
+        #expect(vm.extractedText.isEmpty)
+        #expect(vm.summary == nil)
+        #expect(vm.flashcards.isEmpty)
+        #expect(vm.currentError == nil)
+    }
+
+    // MARK: - Load Images
+
+    @Test("loadImages does nothing when selectedPhotoItems is empty")
+    @MainActor
+    func loadImagesEmptyItems() async {
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: MockAIService()
+        )
+        vm.selectedImages = [UIImage()]
+
+        vm.loadImages()
+        await yieldForTasks()
+
+        // selectedImages should remain unchanged since guard returned early
+        #expect(vm.selectedImages.count == 1)
+    }
+
+    // MARK: - Retry Extract Path
+
+    @Test("retryLastAction retries extract after OCR failure")
+    @MainActor
+    func retryLastActionExtract() async {
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(result: .failure(.noTextFound)),
+            ai: MockAIService()
+        )
+        vm.selectedImages = [UIImage()]
+
+        vm.extractText()
+        await yieldForTasks()
+        #expect(vm.currentError != nil)
+
+        vm.retryLastAction()
+        await yieldForTasks()
+        #expect(vm.currentError != nil)
+    }
+
+    // MARK: - Save
+
+    @Test("save creates Subject, Chapter, and StudyEntry")
+    @MainActor
+    func saveCreatesEntities() throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(
+            for: Subject.self, Chapter.self, StudyEntry.self,
+            configurations: config
+        )
+        let context = container.mainContext
+
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: MockAIService()
+        )
+        vm.extractedText = "Extracted text content"
+        vm.save(subjectName: "Math", chapterName: "Algebra", topicName: "Quadratics", modelContext: context)
+
+        let subjects = try context.fetch(FetchDescriptor<Subject>())
+        #expect(subjects.count == 1)
+        #expect(subjects.first?.name == "Math")
+
+        let chapters = try context.fetch(FetchDescriptor<Chapter>())
+        #expect(chapters.count == 1)
+        #expect(chapters.first?.name == "Algebra")
+
+        let entries = try context.fetch(FetchDescriptor<StudyEntry>())
+        #expect(entries.count == 1)
+        #expect(entries.first?.topicName == "Quadratics")
+        #expect(entries.first?.extractedText == "Extracted text content")
+        #expect(entries.first?.summaryText == nil)
+        #expect(entries.first?.storedFlashcards == nil)
+    }
+
+    @Test("save reuses existing Subject and Chapter")
+    @MainActor
+    func saveReusesExisting() throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(
+            for: Subject.self, Chapter.self, StudyEntry.self,
+            configurations: config
+        )
+        let context = container.mainContext
+
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: MockAIService()
+        )
+        vm.extractedText = "First entry"
+        vm.save(subjectName: "Math", chapterName: "Algebra", topicName: "Topic 1", modelContext: context)
+
+        vm.extractedText = "Second entry"
+        vm.save(subjectName: "Math", chapterName: "Algebra", topicName: "Topic 2", modelContext: context)
+
+        let subjects = try context.fetch(FetchDescriptor<Subject>())
+        #expect(subjects.count == 1)
+
+        let chapters = try context.fetch(FetchDescriptor<Chapter>())
+        #expect(chapters.count == 1)
+
+        let entries = try context.fetch(FetchDescriptor<StudyEntry>())
+        #expect(entries.count == 2)
+    }
+
+    @Test("save stores summary and flashcards when present")
+    @MainActor
+    func saveWithSummaryAndFlashcards() throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(
+            for: Subject.self, Chapter.self, StudyEntry.self,
+            configurations: config
+        )
+        let context = container.mainContext
+
+        let vm = StudyViewModel(
+            photoLoader: MockPhotoLoadingService(),
+            ocr: MockOCRService(),
+            ai: MockAIService()
+        )
+        vm.extractedText = "Some text"
+        vm.summary = TextSummary(summary: "A summary", keyPoints: ["Key 1", "Key 2"])
+        vm.flashcards = [Flashcard(front: "Q1", back: "A1")]
+
+        vm.save(subjectName: "Science", chapterName: "Biology", topicName: "Cells", modelContext: context)
+
+        let entries = try context.fetch(FetchDescriptor<StudyEntry>())
+        #expect(entries.first?.summaryText == "A summary")
+        #expect(entries.first?.keyPoints == ["Key 1", "Key 2"])
+        #expect(entries.first?.storedFlashcards?.count == 1)
+        #expect(entries.first?.storedFlashcards?.first?.front == "Q1")
+    }
 }
 
 // MARK: - StudyError Tests
@@ -318,7 +502,15 @@ struct StudyErrorTests {
         #expect(StudyError.ai(.rateLimited).errorDescription != nil)
         #expect(StudyError.ocr(.noTextFound).errorDescription != nil)
         #expect(StudyError.photoLoading(.decodingFailed).errorDescription != nil)
+        #expect(StudyError.ai(.other(underlying: NSError(domain: "", code: 0))).errorDescription != nil)
+        #expect(StudyError.ocr(.noImages).errorDescription != nil)
         // Cancelled should be silent
         #expect(StudyError.ai(.cancelled).errorDescription == nil)
+    }
+
+    @Test(".ai(.other) is retryable")
+    func otherErrorIsRetryable() {
+        let error = StudyError.ai(.other(underlying: NSError(domain: "test", code: 1)))
+        #expect(error.isRetryable == true)
     }
 }
