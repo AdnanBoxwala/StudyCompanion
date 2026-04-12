@@ -64,6 +64,6 @@ If this privacy policy is updated, the revised version will be posted at this UR
 
 If you have questions about this privacy policy, you can reach the developer at:
 
-**Email:** [adnan93212@gmail.com]
+**Email:** adnan93212@gmail.com
 
 You can also open an issue on the [GitHub repository](https://github.com/AdnanBoxwala/StudyCompanion).
